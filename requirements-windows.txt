@@ -1,0 +1,33 @@
+# Windows-specific requirements for exo (Windows-compatible versions)
+# Note: numpy==2.3.2 is installed separately in setup-windows.bat with --only-binary flag
+
+# Core dependencies (exact versions from setup.py)
+aiohttp==3.10.11
+aiohttp_cors==0.7.0
+aiofiles==24.1.0
+grpcio==1.70.0
+grpcio-tools==1.70.0
+Jinja2==3.1.4
+opencv-python==4.10.0.84
+pillow==10.4.0
+prometheus-client==0.20.0
+protobuf==5.28.1
+psutil==6.0.0
+pydantic==2.9.2
+requests==2.32.3
+rich==13.7.1
+scapy==2.6.1
+tqdm==4.66.4
+transformers==4.46.3
+uuid==1.30
+
+# Windows-specific event loop (replaces uvloop==0.21.0)
+winloop
+
+# GPU detection libraries
+pynvml
+
+# Inference engine (using stable version instead of git)
+tinygrad
+
+# Note: pywin32 is installed separately in setup-windows.bat for Windows GPU detection
