@@ -28,9 +28,21 @@ from exo.inference.inference_engine import get_inference_engine
 from exo.inference.tokenizers import resolve_tokenizer
 from exo.models import build_base_shard, get_repo
 from exo.viz.topology_viz import TopologyViz
-import uvloop
+try:
+    import winloop as uvloop
+    UVLOOP_AVAILABLE = True
+except ImportError:
+    try:
+        import uvloop
+        UVLOOP_AVAILABLE = True
+    except ImportError:
+        UVLOOP_AVAILABLE = False
 import concurrent.futures
-import resource
+try:
+    import resource
+    RESOURCE_AVAILABLE = True
+except ImportError:
+    RESOURCE_AVAILABLE = False
 import psutil
 
 # TODO: figure out why this is happening
@@ -40,17 +52,21 @@ os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 # Configure uvloop for maximum performance
 def configure_uvloop():
-    uvloop.install()
+    if UVLOOP_AVAILABLE and not psutil.WINDOWS:
+        uvloop.install()
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     # Increase file descriptor limits on Unix systems
-    if not psutil.WINDOWS:
-      soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-      try: resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
-      except ValueError:
-        try: resource.setrlimit(resource.RLIMIT_NOFILE, (8192, hard))
-        except ValueError: pass
+    if not psutil.WINDOWS and RESOURCE_AVAILABLE:
+      try:
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        try: resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+        except ValueError:
+          try: resource.setrlimit(resource.RLIMIT_NOFILE, (8192, hard))
+          except ValueError: pass
+      except AttributeError:
+        pass  # resource module may not have RLIMIT_NOFILE on Windows
 
     loop.set_default_executor(concurrent.futures.ThreadPoolExecutor(max_workers=min(32, (os.cpu_count() or 1) * 4)))
     return loop
@@ -219,6 +235,14 @@ def throttled_broadcast(shard: Shard, event: RepoProgressEvent):
 shard_downloader.on_progress.register("broadcast").on_next(throttled_broadcast)
 
 async def run_model_cli(node: Node, model_name: str, prompt: str):
+  # Windows compatibility check
+  if platform.system() == "Windows" or "microsoft" in platform.uname().release.lower():
+    unsupported_models = ["llama-3.2-3b", "llama-3.1-405b", "deepseek-r1"]
+    if model_name in unsupported_models:
+      print(f"Error: Model '{model_name}' is not compatible with Windows/WSL")
+      print("Use smaller models like 'llama-3.2-1b' instead")
+      return
+
   inference_class = node.inference_engine.__class__.__name__
   shard = build_base_shard(model_name, inference_class)
   if not shard:

@@ -232,19 +232,22 @@ def pretty_print_bytes_per_second(bytes_per_second: int) -> str:
 
 def get_all_ip_addresses_and_interfaces():
     ip_addresses = []
-    for interface in get_if_list():
-      try:
-        ip = get_if_addr(interface)
-        if ip.startswith("0.0."): continue
-        simplified_interface = re.sub(r'^\\Device\\NPF_', '', interface)
-        ip_addresses.append((ip, simplified_interface))
-      except:
-        if DEBUG >= 1: print(f"Failed to get IP address for interface {interface}")
+    try:
+        # Get host IP addresses using socket
+        host_name = socket.gethostname()
+        ip_list = socket.gethostbyname_ex(host_name)[2]
+        for ip in ip_list:
+            if ip.startswith("127.") or ip.startswith("0.0."):
+                continue
+            ip_addresses.append((ip, "eth0"))  # Using generic interface name
+    except:
+        if DEBUG >= 1: print("Failed to get IP addresses using socket")
         if DEBUG >= 1: traceback.print_exc()
+    
     if not ip_addresses:
-      if DEBUG >= 1: print("Failed to get any IP addresses. Defaulting to localhost.")
-      return [("localhost", "lo")]
-    return list(set(ip_addresses))
+        if DEBUG >= 1: print("Defaulting to localhost")
+        return [("localhost", "lo")]
+    return ip_addresses
 
 
 
