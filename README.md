@@ -67,6 +67,144 @@ Exo supports different [partitioning strategies](exo/topology/partitioning_strat
 
 The current recommended way to install exo is from source.
 
+### Windows Setup
+
+To run exo on Windows, use the Windows Subsystem for Linux (WSL):
+
+1. **Install WSL**:
+   ```powershell
+   wsl --install -d Ubuntu-22.04
+   ```
+   
+2. **Configure Bridged Networking**:
+   - Create `%USERPROFILE%\.wslconfig` with:
+     ```
+     [wsl2]
+     networkingMode=bridged
+     ```
+   - Restart WSL: `wsl --shutdown`
+
+3. **Use Manual Discovery**:
+   - Create a network config file (e.g., `network_config.json`):
+     ```json
+     {
+       "peers": {
+         "node1": {
+           "address": "192.168.1.100",
+           "port": 5678,
+           "device_capabilities": {"device": "CLANG"}
+         },
+         "node2": {
+           "address": "192.168.1.101",
+           "port": 5678,
+           "device_capabilities": {"device": "CLANG"}
+         }
+       }
+     }
+     ```
+   - Start exo with manual discovery:
+     ```bash
+     exo --discovery-module manual --discovery-config-path /path/to/network_config.json
+     ```
+
+4. **Model Compatibility**:
+   - Only CPU-based models like `llama-3.2-1b` are currently supported
+   - Larger models may show size mismatch errors
+
+> **Note**: UDP discovery and GPU acceleration are not fully supported on Windows yet. Follow [#606](https://github.com/exo-explore/exo/issues/606) for updates.
+
+### Windows Setup
+
+To run exo on Windows, use the Windows Subsystem for Linux (WSL):
+
+1. **Install WSL**:
+   ```powershell
+   wsl --install -d Ubuntu-22.04
+   ```
+   
+2. **Configure Bridged Networking**:
+   - Create `%USERPROFILE%\.wslconfig` with:
+     ```
+     [wsl2]
+     networkingMode=bridged
+     ```
+   - Restart WSL: `wsl --shutdown`
+
+3. **Use Manual Discovery**:
+   - Create a network config file (e.g., `network_config.json`):
+     ```json
+     {
+       "peers": {
+         "node1": {
+           "address": "192.168.1.100",
+           "port": 5678,
+           "device_capabilities": {"device": "CLANG"}
+         },
+         "node2": {
+           "address": "192.168.1.101",
+           "port": 5678,
+           "device_capabilities": {"device": "CLANG"}
+         }
+       }
+     }
+     ```
+   - Start exo with manual discovery:
+     ```bash
+     exo --discovery-module manual --discovery-config-path /path/to/network_config.json
+     ```
+
+4. **Model Compatibility**:
+   - Only CPU-based models like `llama-3.2-1b` are currently supported
+   - Larger models may show size mismatch errors
+
+> **Note**: UDP discovery and GPU acceleration are not fully supported on Windows yet. Follow [#606](https://github.com/exo-explore/exo/issues/606) for updates.
+
+### Windows Setup
+
+To run exo on Windows, use the Windows Subsystem for Linux (WSL):
+
+1. **Install WSL**:
+   ```powershell
+   wsl --install -d Ubuntu-22.04
+   ```
+   
+2. **Configure Bridged Networking**:
+   - Create `%USERPROFILE%\.wslconfig` with:
+     ```
+     [wsl2]
+     networkingMode=bridged
+     ```
+   - Restart WSL: `wsl --shutdown`
+
+3. **Use Manual Discovery**:
+   - Create a network config file (e.g., `network_config.json`):
+     ```json
+     {
+       "peers": {
+         "node1": {
+           "address": "192.168.1.100",
+           "port": 5678,
+           "device_capabilities": {"device": "CLANG"}
+         },
+         "node2": {
+           "address": "192.168.1.101",
+           "port": 5678,
+           "device_capabilities": {"device": "CLANG"}
+         }
+       }
+     }
+     ```
+   - Start exo with manual discovery:
+     ```bash
+     exo --discovery-module manual --discovery-config-path /path/to/network_config.json
+     ```
+
+4. **Model Compatibility**:
+   - Only CPU-based models like `llama-3.2-1b` are currently supported
+   - Larger models may show size mismatch errors
+
+> **Note**: UDP discovery and GPU acceleration are not fully supported on Windows yet. Follow [#606](https://github.com/exo-explore/exo/issues/606) for updates.
+
 ### Prerequisites
 
 - Python>=3.12.0 is required because of [issues with asyncio](https://github.com/exo-explore/exo/issues/5) in previous versions.
@@ -109,20 +247,19 @@ source install.sh
 
 ## Documentation
 
-### Example Usage on Multiple macOS Devices
+### Example Usage
 
-#### Device 1:
-
+#### Device 1 (macOS/Linux):
 ```sh
 exo
 ```
 
-#### Device 2:
+#### Device 2 (Windows WSL):
 ```sh
-exo
+exo --discovery-module manual --discovery-config-path ./network_config.json
 ```
 
-That's it! No configuration required - exo will automatically discover the other device(s).
+> **Windows Note**: Use manual discovery configuration as shown above for reliable networking on Windows.
 
 exo starts a ChatGPT-like WebUI (powered by [tinygrad tinychat](https://github.com/tinygrad/tinygrad/tree/master/examples/tinychat)) on http://localhost:52415
 
@@ -214,14 +351,10 @@ You can read about tinygrad-specific env vars [here](https://docs.tinygrad.org/e
 ### Example Usage on a single device with "exo run" command
 
 ```sh
-exo run llama-3.2-3b
+exo run llama-3.2-1b --prompt "What is the meaning of exo?"
 ```
 
-With a custom prompt:
-
-```sh
-exo run llama-3.2-3b --prompt "What is the meaning of exo?"
-```
+> **Windows Note**: Use smaller models like `llama-3.2-1b` for compatibility.
 
 ### Model Storage
 
